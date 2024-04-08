@@ -25,16 +25,18 @@ function build-jar(){
 }
 
 function build-native(){
-    GRAAL_VER=$($2/bin/java -version 2>&1 | grep GraalVM | grep -oE '\d+(\.\d+)+' | head -1)
+    GRAAL_VER=$($2/bin/java -version 2>&1 | grep GraalVM | grep -oP '\d+(\.\d+)+' | head -1)
     echo '(-) Building' $1 'native with GraalVM' $GRAAL_VER
     OPTS=NATIVE_OPTS_$(echo "$GRAAL_VER" | tr "[:lower:]" "[:upper:]" | tr -d "\n" | tr -c '[:alnum:]' '_')
-    $2/bin/native-image $NATIVE_OPTS ${!OPTS} --report-unsupported-elements-at-runtime -jar ./out/simple-$1-uberjar.jar -H:Name=./out/simple-$1-graal-$GRAAL_VER
+    set -x
+    $2/bin/native-image -H:-CheckToolchain -H:+UnlockExperimentalVMOptions $NATIVE_OPTS ${!OPTS} --report-unsupported-elements-at-runtime -jar ./out/simple-$1-uberjar.jar -H:Name=./out/simple-$1-graal-$GRAAL_VER
+    set +x
 }
 
 #
 # Clojure versions to try out
 #
-clj_versions=(clojure-1.10.1 clojure-1.10.0 clojure-1.9.0 clojure-1.8.0 clojure-1.7.0)
+clj_versions=(clojure-1.11.1)
 #clj_versions=(clojure-1.8.0)
 
 #
